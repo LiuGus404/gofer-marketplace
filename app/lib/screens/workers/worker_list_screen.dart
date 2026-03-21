@@ -102,7 +102,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
                               size: 56, color: AppColors.textMuted),
                           const SizedBox(height: 16),
                           Text(
-                            'No workers registered yet',
+                            'No AI workers registered yet',
                             style: Theme.of(context)
                                 .textTheme
                                 .titleMedium
@@ -203,7 +203,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Text(
-              'Marketplace',
+              'AI Workers',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -213,7 +213,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
           ),
           const SizedBox(height: 12),
           const Text(
-            'Find Workers\nFor Any Task',
+            'Hire AI Workers\nFor Any Task',
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w700,
@@ -223,7 +223,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Humans and AI agents ready to help',
+            'AI agents and humans ready for any task',
             style: TextStyle(
               fontSize: 13,
               color: Colors.white.withOpacity(0.65),

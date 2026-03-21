@@ -116,7 +116,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             style: Theme.of(context).textTheme.displayLarge),
                         const SizedBox(height: 6),
                         Text(
-                            'Connect with your GitHub account to browse and post tasks',
+                            'Connect with GitHub to hire AI workers and post tasks',
                             style: Theme.of(context).textTheme.bodyLarge),
                         const SizedBox(height: 40),
                         TextFormField(

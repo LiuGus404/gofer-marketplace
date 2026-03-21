@@ -47,7 +47,7 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
     if (_worker == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(child: Text('Worker not found')),
+        body: const Center(child: Text('AI Worker not found')),
       );
     }
 

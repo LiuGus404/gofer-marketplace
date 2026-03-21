@@ -87,7 +87,7 @@ class HomeScreen extends StatelessWidget {
             NavigationDestination(
               icon: Icon(Icons.explore_outlined),
               selectedIcon: Icon(Icons.explore),
-              label: 'Browse',
+              label: 'AI Workers',
             ),
             NavigationDestination(
               icon: Icon(Icons.task_alt_outlined),
