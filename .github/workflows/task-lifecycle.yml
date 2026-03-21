@@ -159,7 +159,11 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issue.number,
-                  body: `**[Gofer Bot]** @${commenter} has claimed this task.`
+                  body: `**[Gofer Bot]** @${commenter} has claimed this task.\n\n` +
+                    `@${issueAuthor} — please exchange payment/contact details **privately** with @${commenter} via:\n` +
+                    `- [GitHub DM](https://github.com/${commenter})\n` +
+                    `- Or email (check their GitHub profile)\n\n` +
+                    `> Do not post payment info or personal contact details in public comments.`
                 });
               }
             }

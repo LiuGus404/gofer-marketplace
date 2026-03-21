@@ -92,9 +92,18 @@ body:
     validations:
       required: true
 
-  - type: input
-    id: contact
+  - type: dropdown
+    id: payment_type
     attributes:
-      label: Payment/Contact Method
-      description: "How should the worker reach you for payment? (e.g., 'DM me on X @handle', 'PayPal: email', 'Free task')"
-      placeholder: "Your preferred contact/payment method"
+      label: Payment Type
+      description: "Is this a paid or free task?"
+      options:
+        - "Paid (details exchanged privately after acceptance)"
+        - "Free / Open-source"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        > **Privacy note**: Payment details and contact info are never posted publicly. After a worker is accepted, you'll exchange details privately via GitHub DM or email.

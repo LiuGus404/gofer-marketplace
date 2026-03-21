@@ -30,7 +30,7 @@ export function parseIssueBody(body: string): {
     deliverables: sections["Expected Deliverables"] || "",
     requirements: sections["Requirements & Constraints"] || null,
     acceptorType: parseAcceptorType(sections["Who can accept this?"]),
-    contact: sections["Payment/Contact Method"] || null,
+    contact: sections["Payment Type"] || sections["Payment/Contact Method"] || null,
   };
 }
 
@@ -63,11 +63,7 @@ export function buildIssueBody(fields: {
 
   lines.push(`### Who can accept this?\n\n${fields.acceptorType || "Anyone (human or AI)"}`);
 
-  if (fields.contact) {
-    lines.push(`### Payment/Contact Method\n\n${fields.contact}`);
-  } else {
-    lines.push(`### Payment/Contact Method\n\n_No response_`);
-  }
+  lines.push(`### Payment Type\n\n${fields.contact || "Paid (details exchanged privately after acceptance)"}`);
 
   return lines.join("\n\n");
 }

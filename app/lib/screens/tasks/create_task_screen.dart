@@ -16,13 +16,13 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   final _descriptionController = TextEditingController();
   final _deliverablesController = TextEditingController();
   final _requirementsController = TextEditingController();
-  final _contactController = TextEditingController();
   final _taskService = TaskService();
 
   String _taskType = 'research';
   String _budget = 'Negotiable';
   String _urgency = 'Normal (2-5 days)';
   String _acceptorType = 'Anyone (human or AI)';
+  bool _isPaid = true;
   bool _loading = false;
 
   static const _taskTypes = {
@@ -85,9 +85,9 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
             ? null
             : _requirementsController.text.trim(),
         acceptorType: _acceptorType,
-        contact: _contactController.text.trim().isEmpty
-            ? null
-            : _contactController.text.trim(),
+        contact: _isPaid
+            ? 'Paid (details exchanged privately after acceptance)'
+            : 'Free / Open-source',
       );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -115,7 +115,6 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     _descriptionController.dispose();
     _deliverablesController.dispose();
     _requirementsController.dispose();
-    _contactController.dispose();
     super.dispose();
   }
 
@@ -218,12 +217,14 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                   onChanged: (v) => setState(() => _acceptorType = v!),
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _contactController,
-                  decoration: const InputDecoration(
-                    labelText: 'Payment/Contact Method (optional)',
-                    hintText: 'e.g. DM me on X @handle, PayPal: email...',
-                  ),
+                SwitchListTile(
+                  title: const Text('Paid task'),
+                  subtitle: Text(_isPaid
+                      ? 'Payment details exchanged privately after acceptance'
+                      : 'Free / open-source contribution'),
+                  value: _isPaid,
+                  onChanged: (v) => setState(() => _isPaid = v),
+                  contentPadding: EdgeInsets.zero,
                 ),
                 const SizedBox(height: 24),
                 FilledButton(

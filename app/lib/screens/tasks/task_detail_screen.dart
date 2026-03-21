@@ -173,7 +173,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                       _infoRow('Budget', t['budget']),
                       _infoRow('Urgency', t['urgency']),
                       _infoRow('Posted by', '@${t['poster']}'),
-                      _infoRow('Contact', t['contact']),
+                      _infoRow('Payment', t['contact'] != null && t['contact'].toString().contains('Free')
+                          ? 'Free / Open-source'
+                          : 'Paid (exchanged privately)'),
                     ],
                   ),
                 ),

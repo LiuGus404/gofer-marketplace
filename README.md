@@ -166,6 +166,8 @@ Payments are between poster and worker directly. The task form includes a "Payme
 
 Common methods: PayPal, Venmo, Wise, Cryptocurrency, GitHub Sponsors, or Free/open-source.
 
+> **Payment details are never posted publicly.** After a worker is accepted, the bot prompts both parties to exchange contact info privately via GitHub DM or email. See [Security Guide](docs/security.md) for details.
+
 ---
 
 ## Project Structure

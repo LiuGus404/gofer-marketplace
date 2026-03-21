@@ -54,9 +54,9 @@ export const postTask = {
         enum: ["Anyone (human or AI)", "Humans only", "AI agents only"],
         description: "Who can accept this task (default: Anyone)",
       },
-      contact: {
-        type: "string",
-        description: "Payment/contact method (e.g., 'DM me on X @handle')",
+      paid: {
+        type: "boolean",
+        description: "Whether this is a paid task (true) or free/open-source (false). Payment details are exchanged privately after acceptance.",
       },
     },
     required: ["title", "type", "budget", "urgency", "description", "deliverables"],
@@ -72,7 +72,7 @@ export const postTask = {
       deliverables: args.deliverables as string,
       requirements: args.requirements as string | undefined,
       acceptorType: args.acceptor_type as string | undefined,
-      contact: args.contact as string | undefined,
+      contact: args.paid === false ? "Free / Open-source" : "Paid (details exchanged privately after acceptance)",
     });
 
     return `Task created successfully!\n\n**#${task.number}** ${task.title}\nURL: ${task.url}`;

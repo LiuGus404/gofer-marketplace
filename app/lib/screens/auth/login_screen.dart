@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../app/constants.dart';
 import '../../app/theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/github_oauth.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -17,17 +21,72 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _tokenController = TextEditingController();
   bool _loading = false;
   bool _obscureToken = true;
+  bool _showManualToken = false;
 
-  Future<void> _login() async {
+  // OAuth Device Flow state
+  String? _userCode;
+  String? _verificationUri;
+
+  Future<void> _loginWithOAuth() async {
+    if (AppConstants.githubClientId.isEmpty) {
+      setState(() => _showManualToken = true);
+      return;
+    }
+
+    setState(() => _loading = true);
+    try {
+      final oauth = GitHubOAuth();
+      final deviceData = await oauth.requestDeviceCode();
+
+      setState(() {
+        _userCode = deviceData['user_code'] as String;
+        _verificationUri = deviceData['verification_uri'] as String;
+      });
+
+      // Open browser for user to authorize
+      final uri = Uri.parse(_verificationUri!);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+
+      // Poll for token
+      final token = await oauth.pollForToken(
+        deviceCode: deviceData['device_code'] as String,
+        interval: deviceData['interval'] as int,
+        expiresIn: deviceData['expires_in'] as int,
+      );
+
+      await ref.read(authStateProvider.notifier).loginWithToken(token);
+      if (mounted) context.go('/home/browse');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceFirst('Exception: ', '')),
+            backgroundColor: AppColors.brownDark,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _userCode = null;
+          _verificationUri = null;
+        });
+      }
+    }
+  }
+
+  Future<void> _loginWithToken() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
       await ref.read(authStateProvider.notifier).loginWithToken(
             _tokenController.text.trim(),
           );
-      if (mounted) {
-        context.go('/home/browse');
-      }
+      if (mounted) context.go('/home/browse');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -35,8 +94,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             content: const Text('Invalid GitHub token'),
             backgroundColor: AppColors.brownDark,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       }
@@ -86,69 +143,98 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 padding: const EdgeInsets.all(28),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 420),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            color: AppColors.coral,
-                            borderRadius: BorderRadius.circular(22),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.coral.withOpacity(0.35),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.smart_toy_outlined,
-                            color: Colors.white,
-                            size: 34,
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-                        Text('Welcome to Gofer.ai',
-                            style: Theme.of(context).textTheme.displayLarge),
-                        const SizedBox(height: 6),
-                        Text(
-                            'Connect with GitHub to hire AI workers and post tasks',
-                            style: Theme.of(context).textTheme.bodyLarge),
-                        const SizedBox(height: 40),
-                        TextFormField(
-                          controller: _tokenController,
-                          decoration: InputDecoration(
-                            labelText: 'GitHub Personal Access Token',
-                            prefixIcon: const Icon(Icons.key_outlined,
-                                color: AppColors.brownLight),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscureToken
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined,
-                                color: AppColors.brownLight,
-                              ),
-                              onPressed: () => setState(
-                                  () => _obscureToken = !_obscureToken),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Logo
+                      Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color: AppColors.coral,
+                          borderRadius: BorderRadius.circular(22),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.coral.withOpacity(0.35),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
                             ),
-                            helperText:
-                                'Create at github.com/settings/tokens\nRequired scope: repo',
-                            helperMaxLines: 2,
-                          ),
-                          obscureText: _obscureToken,
-                          validator: (v) => v == null || v.isEmpty
-                              ? 'Enter your GitHub token'
-                              : null,
+                          ],
                         ),
-                        const SizedBox(height: 28),
+                        child: const Icon(
+                          Icons.smart_toy_outlined,
+                          color: Colors.white,
+                          size: 34,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      Text('Welcome to Gofer.ai',
+                          style: Theme.of(context).textTheme.displayLarge),
+                      const SizedBox(height: 6),
+                      Text(
+                          'Connect with GitHub to hire AI workers and post tasks',
+                          style: Theme.of(context).textTheme.bodyLarge),
+                      const SizedBox(height: 40),
+
+                      // OAuth Device Flow: show code
+                      if (_userCode != null) ...[
+                        Card(
+                          color: AppColors.coral.withOpacity(0.05),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              children: [
+                                const Text(
+                                  'Enter this code on GitHub:',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                                const SizedBox(height: 12),
+                                GestureDetector(
+                                  onTap: () {
+                                    Clipboard.setData(
+                                        ClipboardData(text: _userCode!));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text('Code copied!')),
+                                    );
+                                  },
+                                  child: Text(
+                                    _userCode!,
+                                    style: const TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 4,
+                                      color: AppColors.coral,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                const Text('Tap to copy',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.brownLight)),
+                                const SizedBox(height: 16),
+                                const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2),
+                                ),
+                                const SizedBox(height: 8),
+                                const Text('Waiting for authorization...',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.brownLight)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ] else if (!_showManualToken) ...[
+                        // Primary: OAuth login button
                         SizedBox(
                           height: 52,
                           child: FilledButton.icon(
-                            onPressed: _loading ? null : _login,
+                            onPressed: _loading ? null : _loginWithOAuth,
                             icon: _loading
                                 ? const SizedBox(
                                     height: 20,
@@ -160,17 +246,98 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             label: const Text('Connect with GitHub'),
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        Text(
-                          'Your token is stored locally and never sent to our servers.',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(color: AppColors.brownLight),
+                        const SizedBox(height: 16),
+                        Center(
+                          child: TextButton(
+                            onPressed: () =>
+                                setState(() => _showManualToken = true),
+                            child: const Text(
+                              'Use personal access token instead',
+                              style: TextStyle(
+                                  fontSize: 13, color: AppColors.brownLight),
+                            ),
+                          ),
                         ),
                       ],
-                    ),
+
+                      // Manual token input
+                      if (_showManualToken && _userCode == null) ...[
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              TextFormField(
+                                controller: _tokenController,
+                                decoration: InputDecoration(
+                                  labelText: 'GitHub Personal Access Token',
+                                  prefixIcon: const Icon(Icons.key_outlined,
+                                      color: AppColors.brownLight),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscureToken
+                                          ? Icons.visibility_off_outlined
+                                          : Icons.visibility_outlined,
+                                      color: AppColors.brownLight,
+                                    ),
+                                    onPressed: () => setState(
+                                        () => _obscureToken = !_obscureToken),
+                                  ),
+                                  helperText:
+                                      'Create at github.com/settings/tokens\nRequired scope: repo (Issues + Contents)',
+                                  helperMaxLines: 2,
+                                ),
+                                obscureText: _obscureToken,
+                                validator: (v) => v == null || v.isEmpty
+                                    ? 'Enter your GitHub token'
+                                    : null,
+                              ),
+                              const SizedBox(height: 20),
+                              SizedBox(
+                                height: 52,
+                                child: FilledButton.icon(
+                                  onPressed:
+                                      _loading ? null : _loginWithToken,
+                                  icon: _loading
+                                      ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white),
+                                        )
+                                      : const Icon(Icons.login),
+                                  label: const Text('Connect'),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Center(
+                                child: TextButton(
+                                  onPressed: () => setState(
+                                      () => _showManualToken = false),
+                                  child: const Text(
+                                    'Back to GitHub login',
+                                    style: TextStyle(
+                                        fontSize: 13,
+                                        color: AppColors.brownLight),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 20),
+                      Text(
+                        'Your credentials are stored locally and never sent to our servers.',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: AppColors.brownLight),
+                      ),
+                    ],
                   ),
                 ),
               ),
