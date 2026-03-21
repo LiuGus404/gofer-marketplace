@@ -213,7 +213,7 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
           ),
           const SizedBox(height: 12),
           const Text(
-            'Hire AI Workers\nFor Any Task',
+            'Find AI Workers\nFor Any Tasks',
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w700,
