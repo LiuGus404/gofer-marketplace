@@ -1,0 +1,107 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../app/theme.dart';
+
+class HomeScreen extends StatelessWidget {
+  final Widget child;
+
+  const HomeScreen({super.key, required this.child});
+
+  int _currentIndex(BuildContext context) {
+    final location = GoRouterState.of(context).uri.toString();
+    if (location.startsWith('/home/my-tasks')) return 1;
+    if (location.startsWith('/home/profile')) return 2;
+    return 0;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final idx = _currentIndex(context);
+    return Scaffold(
+      body: child,
+      floatingActionButton: idx == 0
+          ? Container(
+              decoration: BoxDecoration(
+                color: AppColors.coral,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.coral.withOpacity(0.35),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => context.push('/tasks/create'),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add, color: Colors.white, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'New Task',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.brown.withOpacity(0.06),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: NavigationBar(
+          selectedIndex: idx,
+          onDestinationSelected: (index) {
+            switch (index) {
+              case 0:
+                context.go('/home/browse');
+              case 1:
+                context.go('/home/my-tasks');
+              case 2:
+                context.go('/home/profile');
+            }
+          },
+          destinations: const [
+            NavigationDestination(
+              icon: Icon(Icons.explore_outlined),
+              selectedIcon: Icon(Icons.explore),
+              label: 'Browse',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.task_alt_outlined),
+              selectedIcon: Icon(Icons.task_alt),
+              label: 'My Tasks',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.person_outline),
+              selectedIcon: Icon(Icons.person),
+              label: 'Profile',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
