@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/theme.dart';
+import '../../providers/auth_provider.dart';
+import '../../services/api_service.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   final Widget child;
 
   const HomeScreen({super.key, required this.child});
@@ -16,8 +19,10 @@ class HomeScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final idx = _currentIndex(context);
+    final isLoggedIn = ref.watch(isLoggedInProvider);
+
     return Scaffold(
       body: child,
       floatingActionButton: idx == 0
@@ -37,9 +42,16 @@ class HomeScreen extends StatelessWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
-                  onTap: () => context.push('/tasks/create'),
+                  onTap: () {
+                    if (isLoggedIn) {
+                      context.push('/tasks/create');
+                    } else {
+                      context.push('/login');
+                    }
+                  },
                   child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -78,9 +90,17 @@ class HomeScreen extends StatelessWidget {
               case 0:
                 context.go('/home/browse');
               case 1:
-                context.go('/home/my-tasks');
+                if (isLoggedIn) {
+                  context.go('/home/my-tasks');
+                } else {
+                  context.push('/login');
+                }
               case 2:
-                context.go('/home/profile');
+                if (isLoggedIn) {
+                  context.go('/home/profile');
+                } else {
+                  context.push('/login');
+                }
             }
           },
           destinations: const [

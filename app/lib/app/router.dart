@@ -21,7 +21,6 @@ const _authRequiredRoutes = [
   '/home/my-tasks',
   '/home/profile',
   '/tasks/create',
-  '/tasks/',
   '/settings',
   '/profile',
 ];
