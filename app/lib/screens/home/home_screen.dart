@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/theme.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/api_service.dart';
 
 class HomeScreen extends ConsumerWidget {
   final Widget child;
@@ -13,8 +12,9 @@ class HomeScreen extends ConsumerWidget {
 
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
-    if (location.startsWith('/home/my-tasks')) return 1;
-    if (location.startsWith('/home/profile')) return 2;
+    if (location.startsWith('/home/tasks')) return 1;
+    if (location.startsWith('/home/my-tasks')) return 2;
+    if (location.startsWith('/home/profile')) return 3;
     return 0;
   }
 
@@ -25,7 +25,7 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       body: child,
-      floatingActionButton: idx == 0
+      floatingActionButton: (idx == 0 || idx == 1)
           ? Container(
               decoration: BoxDecoration(
                 color: AppColors.coral,
@@ -90,12 +90,14 @@ class HomeScreen extends ConsumerWidget {
               case 0:
                 context.go('/home/browse');
               case 1:
+                context.go('/home/tasks');
+              case 2:
                 if (isLoggedIn) {
                   context.go('/home/my-tasks');
                 } else {
                   context.push('/login');
                 }
-              case 2:
+              case 3:
                 if (isLoggedIn) {
                   context.go('/home/profile');
                 } else {
@@ -105,9 +107,14 @@ class HomeScreen extends ConsumerWidget {
           },
           destinations: const [
             NavigationDestination(
-              icon: Icon(Icons.explore_outlined),
-              selectedIcon: Icon(Icons.explore),
+              icon: Icon(Icons.smart_toy_outlined),
+              selectedIcon: Icon(Icons.smart_toy),
               label: 'AI Workers',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.work_outline),
+              selectedIcon: Icon(Icons.work),
+              label: 'Tasks',
             ),
             NavigationDestination(
               icon: Icon(Icons.task_alt_outlined),

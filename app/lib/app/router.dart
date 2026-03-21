@@ -11,6 +11,7 @@ import '../screens/settings/settings_screen.dart';
 import '../screens/tasks/create_task_screen.dart';
 import '../screens/tasks/task_detail_screen.dart';
 import '../screens/tasks/task_list_screen.dart';
+import '../screens/tasks/open_tasks_screen.dart';
 import '../screens/workers/worker_detail_screen.dart';
 import '../screens/workers/worker_list_screen.dart';
 import '../screens/profile/avatar_generator_screen.dart';
@@ -53,6 +54,10 @@ List<RouteBase> _buildRoutes() => [
           GoRoute(
             path: '/home/browse',
             builder: (_, __) => const WorkerListScreen(),
+          ),
+          GoRoute(
+            path: '/home/tasks',
+            builder: (_, __) => const OpenTasksScreen(),
           ),
           GoRoute(
             path: '/home/my-tasks',
