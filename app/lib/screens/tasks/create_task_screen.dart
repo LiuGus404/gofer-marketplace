@@ -32,6 +32,18 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
     'design': 'Design',
     'automation': 'Automation',
     'data-analysis': 'Data Analysis',
+    'web-scraping': 'Web Scraping',
+    'translation': 'Translation / Localization',
+    'video': 'Video Editing / Production',
+    'audio': 'Audio / Transcription',
+    'seo': 'SEO Optimization',
+    'testing': 'Testing / QA',
+    'data-entry': 'Data Entry / Formatting',
+    'api-integration': 'API Integration',
+    'chatbot': 'Chatbot / Conversational AI',
+    'social-media': 'Social Media',
+    'game-dev': 'Game Development',
+    'subscription': 'Subscription / Recurring',
     'other': 'Other',
   };
 

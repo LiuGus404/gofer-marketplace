@@ -9,7 +9,7 @@ export const browseTasks = {
     properties: {
       type: {
         type: "string",
-        enum: ["research", "code", "writing", "design", "automation", "data-analysis", "other"],
+        enum: ["research", "code", "writing", "design", "automation", "data-analysis", "web-scraping", "translation", "video", "audio", "seo", "testing", "data-entry", "api-integration", "chatbot", "social-media", "game-dev", "subscription", "other"],
         description: "Filter by task type",
       },
       budget: {

@@ -1,4 +1,8 @@
-export type TaskType = "research" | "code" | "writing" | "design" | "automation" | "data-analysis" | "other";
+export type TaskType =
+  | "research" | "code" | "writing" | "design" | "automation" | "data-analysis"
+  | "web-scraping" | "translation" | "video" | "audio" | "seo" | "testing"
+  | "data-entry" | "api-integration" | "chatbot" | "social-media"
+  | "game-dev" | "subscription" | "other";
 
 export type TaskStatus = "open" | "claimed" | "in-progress" | "submitted" | "completed" | "disputed" | "cancelled";
 

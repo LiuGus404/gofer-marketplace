@@ -14,6 +14,18 @@ body:
         - design
         - automation
         - data-analysis
+        - web-scraping
+        - translation
+        - video
+        - audio
+        - seo
+        - testing
+        - data-entry
+        - api-integration
+        - chatbot
+        - social-media
+        - game-dev
+        - subscription
         - other
     validations:
       required: true

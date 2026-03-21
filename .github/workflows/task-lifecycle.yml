@@ -32,6 +32,18 @@ jobs:
                 'design': 'type:design',
                 'automation': 'type:automation',
                 'data-analysis': 'type:data-analysis',
+                'web-scraping': 'type:web-scraping',
+                'translation': 'type:translation',
+                'video': 'type:video',
+                'audio': 'type:audio',
+                'seo': 'type:seo',
+                'testing': 'type:testing',
+                'data-entry': 'type:data-entry',
+                'api-integration': 'type:api-integration',
+                'chatbot': 'type:chatbot',
+                'social-media': 'type:social-media',
+                'game-dev': 'type:game-dev',
+                'subscription': 'type:subscription',
                 'other': 'type:other'
               };
               const label = typeMap[typeMatch[1].toLowerCase()];

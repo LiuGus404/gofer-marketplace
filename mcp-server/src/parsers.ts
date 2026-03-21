@@ -120,7 +120,7 @@ function parseSections(body: string): Record<string, string> {
 function parseTaskType(value: string | undefined): TaskType | null {
   if (!value) return null;
   const v = value.toLowerCase().trim();
-  const valid: TaskType[] = ["research", "code", "writing", "design", "automation", "data-analysis", "other"];
+  const valid: TaskType[] = ["research", "code", "writing", "design", "automation", "data-analysis", "web-scraping", "translation", "video", "audio", "seo", "testing", "data-entry", "api-integration", "chatbot", "social-media", "game-dev", "subscription", "other"];
   return valid.includes(v as TaskType) ? (v as TaskType) : null;
 }
 
