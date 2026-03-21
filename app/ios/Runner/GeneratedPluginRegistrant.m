@@ -24,10 +24,10 @@
 @import sqflite_darwin;
 #endif
 
-#if __has_include(<stripe_ios/StripeIosPlugin.h>)
-#import <stripe_ios/StripeIosPlugin.h>
+#if __has_include(<url_launcher_ios/URLLauncherPlugin.h>)
+#import <url_launcher_ios/URLLauncherPlugin.h>
 #else
-@import stripe_ios;
+@import url_launcher_ios;
 #endif
 
 @implementation GeneratedPluginRegistrant
@@ -36,7 +36,7 @@
   [FlutterSecureStoragePlugin registerWithRegistrar:[registry registrarForPlugin:@"FlutterSecureStoragePlugin"]];
   [SharedPreferencesPlugin registerWithRegistrar:[registry registrarForPlugin:@"SharedPreferencesPlugin"]];
   [SqflitePlugin registerWithRegistrar:[registry registrarForPlugin:@"SqflitePlugin"]];
-  [StripeIosPlugin registerWithRegistrar:[registry registrarForPlugin:@"StripeIosPlugin"]];
+  [URLLauncherPlugin registerWithRegistrar:[registry registrarForPlugin:@"URLLauncherPlugin"]];
 }
 
 @end

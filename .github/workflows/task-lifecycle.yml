@@ -41,7 +41,7 @@ jobs:
             // Parse Budget Range
             const budgetMatch = body.match(/### Budget Range\s*\n\s*(.+)/);
             if (budgetMatch) {
-              const budget = budgetMatch[1].trim();
+              const budget = budgetMatch[1].trim().replace(/\\/g, '');
               const budgetMap = {
                 '$0 (volunteer/open-source)': 'budget:free',
                 '$1-$25': 'budget:low',

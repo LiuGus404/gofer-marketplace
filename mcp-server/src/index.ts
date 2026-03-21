@@ -17,7 +17,7 @@ import { searchWorkers } from "./tools/search-workers.js";
 import { myTasks } from "./tools/my-tasks.js";
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GOFER_REPO = process.env.GOFER_REPO || "gofer-ai/marketplace";
+const GOFER_REPO = process.env.GOFER_REPO || "LiuGus404/gofer-marketplace";
 
 if (!GITHUB_TOKEN) {
   console.error("Error: GITHUB_TOKEN environment variable is required.");
