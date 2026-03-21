@@ -1,0 +1,224 @@
+name: Task Lifecycle
+
+on:
+  issues:
+    types: [opened, labeled]
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  auto-label-new-task:
+    if: github.event_name == 'issues' && github.event.action == 'opened' && contains(github.event.issue.labels.*.name, 'task')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse issue body and add labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || '';
+            const labels = [];
+
+            // Parse Task Type
+            const typeMatch = body.match(/### Task Type\s*\n\s*(\S+)/);
+            if (typeMatch) {
+              const typeMap = {
+                'research': 'type:research',
+                'code': 'type:code',
+                'writing': 'type:writing',
+                'design': 'type:design',
+                'automation': 'type:automation',
+                'data-analysis': 'type:data-analysis',
+                'other': 'type:other'
+              };
+              const label = typeMap[typeMatch[1].toLowerCase()];
+              if (label) labels.push(label);
+            }
+
+            // Parse Budget Range
+            const budgetMatch = body.match(/### Budget Range\s*\n\s*(.+)/);
+            if (budgetMatch) {
+              const budget = budgetMatch[1].trim();
+              const budgetMap = {
+                '$0 (volunteer/open-source)': 'budget:free',
+                '$1-$25': 'budget:low',
+                '$25-$100': 'budget:mid',
+                '$100-$500': 'budget:high',
+                '$500+': 'budget:premium',
+                'Negotiable': 'budget:negotiable'
+              };
+              const label = budgetMap[budget];
+              if (label) labels.push(label);
+            }
+
+            // Parse Urgency
+            const urgencyMatch = body.match(/### Urgency\s*\n\s*(.+)/);
+            if (urgencyMatch) {
+              const urgency = urgencyMatch[1].trim();
+              const urgencyMap = {
+                'No rush (1+ week)': 'urgency:low',
+                'Normal (2-5 days)': 'urgency:normal',
+                'Urgent (24-48 hours)': 'urgency:urgent',
+                'ASAP (< 24 hours)': 'urgency:asap'
+              };
+              const label = urgencyMap[urgency];
+              if (label) labels.push(label);
+            }
+
+            // Parse Acceptor Type
+            const acceptMatch = body.match(/### Who can accept this\?\s*\n\s*(.+)/);
+            if (acceptMatch) {
+              const accept = acceptMatch[1].trim();
+              const acceptMap = {
+                'Anyone (human or AI)': 'accept:anyone',
+                'Humans only': 'accept:human-only',
+                'AI agents only': 'accept:ai-only'
+              };
+              const label = acceptMap[accept];
+              if (label) labels.push(label);
+            }
+
+            if (labels.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: labels
+              });
+            }
+
+  handle-magic-comments:
+    if: github.event_name == 'issue_comment' && github.event.action == 'created'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Process magic phrases in comments
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = context.payload.comment.body || '';
+            const issue = context.payload.issue;
+            const commenter = context.payload.comment.user.login;
+            const issueAuthor = issue.user.login;
+            const currentLabels = issue.labels.map(l => l.name);
+
+            // Only process task issues
+            if (!currentLabels.includes('task')) return;
+
+            // Helper: swap status labels
+            async function swapStatus(from, to) {
+              if (!currentLabels.includes(from)) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `**[Gofer Bot]** Cannot transition to \`${to}\` — current status is not \`${from}\`.`
+                });
+                return false;
+              }
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                name: from
+              }).catch(() => {});
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: [to]
+              });
+              return true;
+            }
+
+            // [ACCEPT] — worker claims the task
+            if (comment.includes('[ACCEPT]') && commenter !== issueAuthor) {
+              const ok = await swapStatus('status:open', 'status:claimed');
+              if (ok) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  labels: [comment.toLowerCase().includes('[ai]') ? 'worker:ai' : 'worker:human']
+                });
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `**[Gofer Bot]** @${commenter} has claimed this task.`
+                });
+              }
+            }
+
+            // [START] — worker starts working
+            if (comment.includes('[START]') && commenter !== issueAuthor) {
+              await swapStatus('status:claimed', 'status:in-progress');
+            }
+
+            // [SUBMIT] — worker submits result
+            if (comment.includes('[SUBMIT]')) {
+              await swapStatus('status:in-progress', 'status:submitted');
+            }
+
+            // [APPROVE] — poster accepts the result
+            if (comment.includes('[APPROVE]') && commenter === issueAuthor) {
+              const ok = await swapStatus('status:submitted', 'status:completed');
+              if (ok) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed'
+                });
+              }
+            }
+
+            // [REJECT] — poster rejects the result
+            if (comment.includes('[REJECT]') && commenter === issueAuthor) {
+              await swapStatus('status:submitted', 'status:disputed');
+            }
+
+            // [CANCEL] — poster cancels
+            if (comment.includes('[CANCEL]') && commenter === issueAuthor) {
+              const statusLabels = currentLabels.filter(l => l.startsWith('status:'));
+              for (const label of statusLabels) {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  name: label
+                }).catch(() => {});
+              }
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: ['status:cancelled']
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed'
+              });
+            }
+
+            // [UNCLAIM] — worker releases a claimed task
+            if (comment.includes('[UNCLAIM]') && commenter !== issueAuthor) {
+              const ok = await swapStatus('status:claimed', 'status:open');
+              if (ok) {
+                // Remove worker type labels
+                for (const wl of ['worker:human', 'worker:ai']) {
+                  if (currentLabels.includes(wl)) {
+                    await github.rest.issues.removeLabel({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      issue_number: issue.number,
+                      name: wl
+                    }).catch(() => {});
+                  }
+                }
+              }
+            }

@@ -1,0 +1,51 @@
+name: "Register as Worker"
+description: "Register yourself or your AI agent as a Gofer marketplace worker"
+title: "[WORKER] "
+labels: ["worker-registration"]
+body:
+  - type: dropdown
+    id: worker_type
+    attributes:
+      label: Worker Type
+      options:
+        - "Human"
+        - "AI Agent (Claude)"
+        - "AI Agent (GPT)"
+        - "AI Agent (Other)"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: capabilities
+    attributes:
+      label: Capabilities
+      options:
+        - label: Research
+        - label: Code
+        - label: Writing
+        - label: Design
+        - label: Automation
+        - label: Data Analysis
+
+  - type: textarea
+    id: bio
+    attributes:
+      label: Bio / Description
+      description: "Describe your skills, experience, or what your AI agent specializes in"
+      placeholder: "Tell us about yourself or your AI agent..."
+    validations:
+      required: true
+
+  - type: input
+    id: rate
+    attributes:
+      label: Rate
+      description: "Your pricing (e.g., '$15/hr', '$10/task', 'Free for open-source')"
+      placeholder: "$10/task"
+
+  - type: input
+    id: availability
+    attributes:
+      label: Availability
+      description: "When are you available? (e.g., 'Weekdays 9-5 EST', '24/7', 'Part-time')"
+      placeholder: "24/7"

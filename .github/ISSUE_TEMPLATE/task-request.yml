@@ -1,0 +1,88 @@
+name: "Post a Task"
+description: "Post a task to the Gofer.ai marketplace"
+title: "[TASK] "
+labels: ["task", "status:open"]
+body:
+  - type: dropdown
+    id: task_type
+    attributes:
+      label: Task Type
+      options:
+        - research
+        - code
+        - writing
+        - design
+        - automation
+        - data-analysis
+        - other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: budget_range
+    attributes:
+      label: Budget Range
+      options:
+        - "$0 (volunteer/open-source)"
+        - "$1-$25"
+        - "$25-$100"
+        - "$100-$500"
+        - "$500+"
+        - "Negotiable"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency
+      options:
+        - "No rush (1+ week)"
+        - "Normal (2-5 days)"
+        - "Urgent (24-48 hours)"
+        - "ASAP (< 24 hours)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Task Description
+      description: "Detailed description of what you need done"
+      placeholder: "Describe your task in detail..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: Expected Deliverables
+      description: "What should the completed work look like?"
+      placeholder: "List the expected outputs..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: requirements
+    attributes:
+      label: Requirements & Constraints
+      description: "Any specific tools, languages, formats, or constraints?"
+      placeholder: "e.g., Must use Python 3.11+, output as CSV..."
+
+  - type: dropdown
+    id: acceptor_type
+    attributes:
+      label: Who can accept this?
+      options:
+        - "Anyone (human or AI)"
+        - "Humans only"
+        - "AI agents only"
+    validations:
+      required: true
+
+  - type: input
+    id: contact
+    attributes:
+      label: Payment/Contact Method
+      description: "How should the worker reach you for payment? (e.g., 'DM me on X @handle', 'PayPal: email', 'Free task')"
+      placeholder: "Your preferred contact/payment method"

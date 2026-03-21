@@ -1,0 +1,191 @@
+name: Update Worker Reputation
+
+on:
+  issues:
+    types: [closed]
+
+permissions:
+  issues: read
+  contents: write
+
+jobs:
+  update-reputation:
+    if: contains(github.event.issue.labels.*.name, 'status:completed')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update worker stats
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const issueNumber = issue.number;
+
+            // Find the worker who accepted this task
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+            });
+
+            // Find [ACCEPT] comment to identify worker
+            let workerUsername = null;
+            for (const comment of comments) {
+              if (comment.body && comment.body.includes('[ACCEPT]') && comment.user.login !== issue.user.login) {
+                workerUsername = comment.user.login;
+                break;
+              }
+            }
+
+            if (!workerUsername) {
+              console.log('No worker found for this task');
+              return;
+            }
+
+            // Find rating comment [RATE: N/5]
+            let rating = null;
+            for (const comment of comments) {
+              const rateMatch = comment.body?.match(/\[RATE:\s*(\d(?:\.\d)?)\s*\/\s*5\]/);
+              if (rateMatch && comment.user.login === issue.user.login) {
+                rating = parseFloat(rateMatch[1]);
+                break;
+              }
+            }
+
+            // Read current worker file
+            const workerPath = `workers/${workerUsername}.yml`;
+            let workerContent = null;
+            let workerSha = null;
+
+            try {
+              const { data: fileData } = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: workerPath,
+              });
+              if (fileData.content) {
+                workerContent = Buffer.from(fileData.content, 'base64').toString('utf-8');
+                workerSha = fileData.sha;
+              }
+            } catch (e) {
+              console.log(`Worker file not found: ${workerPath}`);
+              return;
+            }
+
+            // Parse YAML (simple line-based parsing to avoid dependencies)
+            const lines = workerContent.split('\n');
+            const updatedLines = lines.map(line => {
+              if (line.startsWith('tasks_completed:')) {
+                const current = parseInt(line.split(':')[1].trim()) || 0;
+                return `tasks_completed: ${current + 1}`;
+              }
+              if (line.startsWith('avg_rating:') && rating !== null) {
+                const currentRating = line.split(':')[1].trim();
+                if (currentRating === 'null' || currentRating === '') {
+                  return `avg_rating: ${rating}`;
+                }
+                // Simple rolling average
+                const prev = parseFloat(currentRating);
+                const tasksLine = lines.find(l => l.startsWith('tasks_completed:'));
+                const tasksCompleted = tasksLine ? parseInt(tasksLine.split(':')[1].trim()) || 0 : 0;
+                const newAvg = ((prev * tasksCompleted) + rating) / (tasksCompleted + 1);
+                return `avg_rating: ${Math.round(newAvg * 10) / 10}`;
+              }
+              if (line.startsWith('reputation_score:')) {
+                // Recalculate: (tasks * 10) + (rating * 20)
+                const tasksLine = lines.find(l => l.startsWith('tasks_completed:'));
+                const tasks = (tasksLine ? parseInt(tasksLine.split(':')[1].trim()) || 0 : 0) + 1;
+                const ratingLine = lines.find(l => l.startsWith('avg_rating:'));
+                const avgRating = ratingLine ? parseFloat(ratingLine.split(':')[1].trim()) || 0 : 0;
+                const score = (tasks * 10) + (avgRating * 20);
+                return `reputation_score: ${Math.round(score)}`;
+              }
+              return line;
+            });
+
+            const newContent = updatedLines.join('\n');
+
+            // Update worker file
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: workerPath,
+              message: `Update reputation: ${workerUsername} (task #${issueNumber})`,
+              content: Buffer.from(newContent).toString('base64'),
+              sha: workerSha,
+            });
+
+            console.log(`Updated reputation for ${workerUsername}: task #${issueNumber}, rating: ${rating}`);
+
+      - name: Update leaderboard
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Fetch all worker files
+            let workerFiles;
+            try {
+              const { data } = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: 'workers',
+              });
+              workerFiles = Array.isArray(data) ? data.filter(f => f.name.endsWith('.yml')) : [];
+            } catch {
+              return;
+            }
+
+            const workers = [];
+            for (const file of workerFiles) {
+              const { data: fileData } = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: file.path,
+              });
+
+              if (fileData.content) {
+                const content = Buffer.from(fileData.content, 'base64').toString('utf-8');
+                // Simple YAML parsing
+                const get = (key) => {
+                  const match = content.match(new RegExp(`^${key}:\\s*(.+)$`, 'm'));
+                  return match ? match[1].trim() : null;
+                };
+                workers.push({
+                  username: get('github_username'),
+                  worker_type: get('worker_type'),
+                  tasks_completed: parseInt(get('tasks_completed')) || 0,
+                  avg_rating: parseFloat(get('avg_rating')) || null,
+                  reputation_score: parseInt(get('reputation_score')) || 0,
+                });
+              }
+            }
+
+            // Sort by reputation
+            workers.sort((a, b) => b.reputation_score - a.reputation_score);
+
+            const leaderboard = {
+              updated_at: new Date().toISOString(),
+              workers,
+            };
+
+            // Update leaderboard.json
+            let sha;
+            try {
+              const { data } = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: 'stats/leaderboard.json',
+              });
+              sha = data.sha;
+            } catch {
+              // File doesn't exist
+            }
+
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: 'stats/leaderboard.json',
+              message: `Update leaderboard after task #${context.payload.issue.number}`,
+              content: Buffer.from(JSON.stringify(leaderboard, null, 2)).toString('base64'),
+              ...(sha ? { sha } : {}),
+            });
