@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,9 +24,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _obscureToken = true;
   bool _showManualToken = false;
 
-  // OAuth Device Flow state
+  // Device Flow state (mobile only)
   String? _userCode;
-  String? _verificationUri;
 
   Future<void> _loginWithOAuth() async {
     if (AppConstants.githubClientId.isEmpty) {
@@ -33,6 +33,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
+    if (kIsWeb) {
+      // Web: redirect-based OAuth — open GitHub authorize page
+      // User will be redirected back with ?code=xxx
+      final uri = Uri.parse(
+        'https://github.com/login/oauth/authorize'
+        '?client_id=${AppConstants.githubClientId}'
+        '&scope=repo',
+      );
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      // After authorizing, user needs to paste the token manually
+      // (since we don't have a backend to exchange the code)
+      if (mounted) {
+        setState(() => _showManualToken = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'After authorizing on GitHub, create a token at github.com/settings/tokens and paste it below.',
+            ),
+            duration: Duration(seconds: 8),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Mobile: Device Flow (no CORS issue)
     setState(() => _loading = true);
     try {
       final oauth = GitHubOAuth();
@@ -40,16 +66,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       setState(() {
         _userCode = deviceData['user_code'] as String;
-        _verificationUri = deviceData['verification_uri'] as String;
       });
 
-      // Open browser for user to authorize
-      final uri = Uri.parse(_verificationUri!);
+      final verificationUri =
+          deviceData['verification_uri'] as String;
+      final uri = Uri.parse(verificationUri);
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       }
 
-      // Poll for token
       final token = await oauth.pollForToken(
         deviceCode: deviceData['device_code'] as String,
         interval: deviceData['interval'] as int,
@@ -73,7 +98,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         setState(() {
           _loading = false;
           _userCode = null;
-          _verificationUri = null;
         });
       }
     }
@@ -83,9 +107,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
     try {
-      await ref.read(authStateProvider.notifier).loginWithToken(
-            _tokenController.text.trim(),
-          );
+      await ref
+          .read(authStateProvider.notifier)
+          .loginWithToken(_tokenController.text.trim());
       if (mounted) context.go('/home/browse');
     } catch (e) {
       if (mounted) {
@@ -146,7 +170,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Logo
                       Container(
                         width: 72,
                         height: 72,
@@ -172,11 +195,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           style: Theme.of(context).textTheme.displayLarge),
                       const SizedBox(height: 6),
                       Text(
-                          'Connect with GitHub to hire AI workers and post tasks',
-                          style: Theme.of(context).textTheme.bodyLarge),
+                        'Connect with GitHub to hire AI workers and post tasks',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
                       const SizedBox(height: 40),
 
-                      // OAuth Device Flow: show code
+                      // Device Flow code display (mobile only)
                       if (_userCode != null) ...[
                         Card(
                           color: AppColors.coral.withOpacity(0.05),
@@ -184,10 +208,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             padding: const EdgeInsets.all(20),
                             child: Column(
                               children: [
-                                const Text(
-                                  'Enter this code on GitHub:',
-                                  style: TextStyle(fontSize: 14),
-                                ),
+                                const Text('Enter this code on GitHub:',
+                                    style: TextStyle(fontSize: 14)),
                                 const SizedBox(height: 12),
                                 GestureDetector(
                                   onTap: () {
@@ -230,7 +252,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                       ] else if (!_showManualToken) ...[
-                        // Primary: OAuth login button
+                        // Primary button
                         SizedBox(
                           height: 52,
                           child: FilledButton.icon(
@@ -284,7 +306,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         () => _obscureToken = !_obscureToken),
                                   ),
                                   helperText:
-                                      'Create at github.com/settings/tokens\nRequired scope: repo (Issues + Contents)',
+                                      'Create at github.com/settings/tokens\nRequired scope: repo',
                                   helperMaxLines: 2,
                                 ),
                                 obscureText: _obscureToken,
@@ -296,8 +318,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               SizedBox(
                                 height: 52,
                                 child: FilledButton.icon(
-                                  onPressed:
-                                      _loading ? null : _loginWithToken,
+                                  onPressed: _loading ? null : _loginWithToken,
                                   icon: _loading
                                       ? const SizedBox(
                                           height: 20,
@@ -313,8 +334,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               const SizedBox(height: 12),
                               Center(
                                 child: TextButton(
-                                  onPressed: () => setState(
-                                      () => _showManualToken = false),
+                                  onPressed: () =>
+                                      setState(() => _showManualToken = false),
                                   child: const Text(
                                     'Back to GitHub login',
                                     style: TextStyle(
