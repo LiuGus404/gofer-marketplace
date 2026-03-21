@@ -13,6 +13,7 @@ import '../screens/tasks/task_detail_screen.dart';
 import '../screens/tasks/task_list_screen.dart';
 import '../screens/workers/worker_detail_screen.dart';
 import '../screens/workers/worker_list_screen.dart';
+import '../screens/profile/avatar_generator_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -23,6 +24,7 @@ const _authRequiredRoutes = [
   '/tasks/create',
   '/settings',
   '/profile',
+  '/avatar-generator',
 ];
 
 Future<String?> _authGuard(GoRouterState state) async {
@@ -86,6 +88,10 @@ List<RouteBase> _buildRoutes() => [
       GoRoute(
         path: '/profile',
         builder: (_, __) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/avatar-generator',
+        builder: (_, __) => const AvatarGeneratorScreen(),
       ),
     ];
 

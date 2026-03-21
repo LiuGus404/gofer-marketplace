@@ -7,6 +7,6 @@ class AppConstants {
   );
   static const String githubClientId = String.fromEnvironment(
     'GITHUB_CLIENT_ID',
-    defaultValue: '',
+    defaultValue: 'Ov23liF1bogcYVGUkcTR',
   );
 }

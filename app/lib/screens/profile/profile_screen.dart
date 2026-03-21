@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../app/theme.dart';
 import '../../providers/auth_provider.dart';
@@ -11,7 +12,8 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authStateProvider).valueOrNull;
-    final name = user?['name'] as String? ?? user?['login'] as String? ?? 'User';
+    final name =
+        user?['name'] as String? ?? user?['login'] as String? ?? 'User';
     final login = user?['login'] as String? ?? '';
     final avatarUrl = user?['avatar_url'] as String?;
 
@@ -52,12 +54,61 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 Text(name, style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 4),
-                Text('@$login',
-                    style: Theme.of(context).textTheme.bodyMedium),
+                Text('@$login', style: Theme.of(context).textTheme.bodyMedium),
               ],
-            ),
+            ).animate().fade().scaleXY(begin: 0.95, end: 1.0, duration: 400.ms),
           ),
           const SizedBox(height: 32),
+
+          // Pixel Avatar Generator Banner
+          Material(
+            color: AppColors.accentMuted,
+            borderRadius: BorderRadius.circular(16),
+            child: InkWell(
+              onTap: () => context.push('/avatar-generator'),
+              borderRadius: BorderRadius.circular(16),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(
+                        color: AppColors.surface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.auto_awesome,
+                          color: AppColors.primary),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'AI Character Generator',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Create a custom 8-bit avatar',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right,
+                        color: AppColors.textPrimary),
+                  ],
+                ),
+              ),
+            ),
+          ).animate(onPlay: (c) => c.repeat(reverse: true)).shimmer(
+                duration: 2000.ms,
+                color: AppColors.surface.withOpacity(0.5),
+              ),
+
+          const SizedBox(height: 24),
           _ProfileTile(
             icon: Icons.settings_outlined,
             label: 'Settings',

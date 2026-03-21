@@ -39,6 +39,8 @@ dependencies:
 
   # URL launcher (for opening GitHub links)
   url_launcher: ^6.2.0
+  google_fonts: ^8.0.2
+  flutter_animate: ^4.5.2
 
 dev_dependencies:
   flutter_test:
