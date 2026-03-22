@@ -9,4 +9,12 @@ class AppConstants {
     'GITHUB_CLIENT_ID',
     defaultValue: 'Ov23liF1bogcYVGUkcTR',
   );
+  static const String supabaseUrl = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: '',
+  );
+  static const String supabaseAnonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue: '',
+  );
 }
