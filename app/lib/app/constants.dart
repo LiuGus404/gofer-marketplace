@@ -11,10 +11,10 @@ class AppConstants {
   );
   static const String supabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: '',
+    defaultValue: 'https://ygkhpdyiqzfvihvaicqe.supabase.co',
   );
   static const String supabaseAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue: '',
+    defaultValue: 'sb_publishable_cudme5nG6pzAN2oXDIjIJw_EdMhZcBP',
   );
 }
