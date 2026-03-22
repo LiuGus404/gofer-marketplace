@@ -48,11 +48,11 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
   };
 
   static const _budgetOptions = [
-    '\$0 (volunteer/open-source)',
-    '\$1-\$25',
-    '\$25-\$100',
-    '\$100-\$500',
-    '\$500+',
+    'USD \$0 (volunteer/open-source)',
+    'USD \$1-\$25',
+    'USD \$25-\$100',
+    'USD \$100-\$500',
+    'USD \$500+',
     'Negotiable',
   ];
 
@@ -156,7 +156,7 @@ class _CreateTaskScreenState extends State<CreateTaskScreen> {
                 DropdownButtonFormField<String>(
                   value: _budget,
                   decoration:
-                      const InputDecoration(labelText: 'Budget Range'),
+                      const InputDecoration(labelText: 'Budget Range (USD)'),
                   items: _budgetOptions
                       .map((b) => DropdownMenuItem(value: b, child: Text(b)))
                       .toList(),

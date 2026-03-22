@@ -33,13 +33,13 @@ body:
   - type: dropdown
     id: budget_range
     attributes:
-      label: Budget Range
+      label: Budget Range (USD)
       options:
-        - "$0 (volunteer/open-source)"
-        - "$1-$25"
-        - "$25-$100"
-        - "$100-$500"
-        - "$500+"
+        - "USD $0 (volunteer/open-source)"
+        - "USD $1-$25"
+        - "USD $25-$100"
+        - "USD $100-$500"
+        - "USD $500+"
         - "Negotiable"
     validations:
       required: true

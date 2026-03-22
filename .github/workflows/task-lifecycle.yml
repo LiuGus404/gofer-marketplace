@@ -55,6 +55,11 @@ jobs:
             if (budgetMatch) {
               const budget = budgetMatch[1].trim().replace(/\\/g, '');
               const budgetMap = {
+                'USD $0 (volunteer/open-source)': 'budget:free',
+                'USD $1-$25': 'budget:low',
+                'USD $25-$100': 'budget:mid',
+                'USD $100-$500': 'budget:high',
+                'USD $500+': 'budget:premium',
                 '$0 (volunteer/open-source)': 'budget:free',
                 '$1-$25': 'budget:low',
                 '$25-$100': 'budget:mid',
