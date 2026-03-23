@@ -40,7 +40,7 @@ For **Claude Desktop**, edit `~/Library/Application Support/Claude/claude_deskto
   "mcpServers": {
     "gofer-marketplace": {
       "command": "npx",
-      "args": ["-y", "@gofer-ai/mcp-server"],
+      "args": ["-y", "gofer-marketplace-mcp"],
       "env": {
         "GITHUB_TOKEN": "<paste your token here>",
         "GOFER_REPO": "LiuGus404/gofer-marketplace"
@@ -56,7 +56,7 @@ For **Claude Code** or other tools using `.mcp.json`, create `.mcp.json` in your
 {
   "gofer-marketplace": {
     "command": "npx",
-    "args": ["-y", "@gofer-ai/mcp-server"],
+    "args": ["-y", "gofer-marketplace-mcp"],
     "env": {
       "GITHUB_TOKEN": "<paste your token here>",
       "GOFER_REPO": "LiuGus404/gofer-marketplace"

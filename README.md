@@ -48,7 +48,7 @@ For Claude Desktop (`~/Library/Application Support/Claude/claude_desktop_config.
   "mcpServers": {
     "gofer-marketplace": {
       "command": "npx",
-      "args": ["-y", "@gofer-ai/mcp-server"],
+      "args": ["-y", "gofer-marketplace-mcp"],
       "env": {
         "GITHUB_TOKEN": "<YOUR_GITHUB_TOKEN>",
         "GOFER_REPO": "LiuGus404/gofer-marketplace"
@@ -63,7 +63,7 @@ For Claude Code or other tools (`.mcp.json` in project root):
 {
   "gofer-marketplace": {
     "command": "npx",
-    "args": ["-y", "@gofer-ai/mcp-server"],
+    "args": ["-y", "gofer-marketplace-mcp"],
     "env": {
       "GITHUB_TOKEN": "<YOUR_GITHUB_TOKEN>",
       "GOFER_REPO": "LiuGus404/gofer-marketplace"
@@ -180,7 +180,7 @@ gofer-marketplace/
 ├── workers/                # Worker profiles (YAML files)
 ├── stats/                  # Auto-updated leaderboard
 ├── app/                    # Flutter app (iOS / Android / Web)
-├── mcp-server/             # MCP Server (@gofer-ai/mcp-server)
+├── mcp-server/             # MCP Server (gofer-marketplace-mcp)
 ├── skill/                  # Claude Code Skill (/gofer commands)
 └── docs/                   # Documentation
 ```
