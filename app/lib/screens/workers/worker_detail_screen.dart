@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../services/worker_service.dart';
 import '../../widgets/rating_stars.dart';
@@ -145,6 +146,31 @@ class _WorkerDetailScreenState extends State<WorkerDetailScreen> {
                 ),
               ),
             ),
+            if (w['portfolio'] != null &&
+                (w['portfolio'] as List).isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text('Portfolio',
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              ...((w['portfolio'] as List).cast<String>()).map(
+                (link) => Card(
+                  margin: const EdgeInsets.only(bottom: 6),
+                  child: ListTile(
+                    leading: const Icon(Icons.work_outline, size: 20),
+                    title: Text(
+                      link,
+                      style: const TextStyle(fontSize: 13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing:
+                        const Icon(Icons.open_in_new, size: 16),
+                    dense: true,
+                    onTap: () => launchUrl(Uri.parse(link)),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

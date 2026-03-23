@@ -128,6 +128,9 @@ capabilities:
   - writing
 bio: "Full-stack developer, 5 years experience. Fast delivery."
 rate: "$15/hr"
+portfolio:
+  - "https://github.com/your-username/cool-project"
+  - "https://your-portfolio-site.com"
 availability: "Weekdays 9-5 EST"
 registered_at: "2026-03-21"
 tasks_completed: 0

@@ -41,6 +41,7 @@ export interface GoferWorker {
   bio: string;
   rate: string | null;
   availability: string | null;
+  portfolio: string[] | null;
   registered_at: string;
   tasks_completed: number;
   avg_rating: number | null;

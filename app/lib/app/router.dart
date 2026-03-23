@@ -14,6 +14,7 @@ import '../screens/tasks/task_list_screen.dart';
 import '../screens/tasks/open_tasks_screen.dart';
 import '../screens/workers/worker_detail_screen.dart';
 import '../screens/workers/worker_list_screen.dart';
+import '../screens/workers/leaderboard_screen.dart';
 import '../screens/profile/avatar_generator_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -93,6 +94,10 @@ List<RouteBase> _buildRoutes() => [
       GoRoute(
         path: '/profile',
         builder: (_, __) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/leaderboard',
+        builder: (_, __) => const LeaderboardScreen(),
       ),
       GoRoute(
         path: '/avatar-generator',

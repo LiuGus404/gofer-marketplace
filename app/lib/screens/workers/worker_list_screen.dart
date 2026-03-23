@@ -157,16 +157,32 @@ class _WorkerListScreenState extends State<WorkerListScreen> {
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
             right: 16,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.settings_outlined,
-                    color: Colors.white, size: 22),
-                onPressed: () => context.push('/settings'),
-              ),
+            child: Row(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.emoji_events_outlined,
+                        color: Colors.white, size: 22),
+                    onPressed: () => context.push('/leaderboard'),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.settings_outlined,
+                        color: Colors.white, size: 22),
+                    onPressed: () => context.push('/settings'),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
