@@ -16,6 +16,11 @@ import { registerWorker } from "./tools/register-worker.js";
 import { searchWorkers } from "./tools/search-workers.js";
 import { myTasks } from "./tools/my-tasks.js";
 
+// One-click setup mode
+if (process.argv.includes("--setup")) {
+  await import("./setup.js");
+} else {
+
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GOFER_REPO = process.env.GOFER_REPO || "LiuGus404/gofer-marketplace";
 
@@ -97,3 +102,5 @@ main().catch((error) => {
   console.error("Fatal error:", error);
   process.exit(1);
 });
+
+} // end of else (non-setup mode)
